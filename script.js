@@ -14,41 +14,32 @@ let voiceSupported = !!SpeechRecognition;
 let textOnlyMode = false;
 
 // Check if running on HTTPS or localhost
-const isSecureContext = window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost';
+const isSecureContext = window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 
 // Load voices as soon as they are available
 // Load voices with retry mechanism
 function loadVoices() {
     const voices = synth.getVoices();
     if (voices.length > 0) {
-        logDebug("Available Voices: " + voices.map(v => v.name).join(", "));
+        logDebug("Available Voices: " + voices.length);
 
-        // Priority 1: Google Bangla
-        miraVoice = voices.find(v => v.name.includes('Google Bangla') || v.name === 'Google Bangla');
+        // Priority 1: Google Bangla (Best for Android)
+        miraVoice = voices.find(v => v.name.includes('Google') && (v.name.includes('Bangla') || v.lang === 'bn-BD' || v.lang === 'bn-IN'));
 
-        // Priority 2: Google with Bangla/Bengali
-        if (!miraVoice) {
-            miraVoice = voices.find(v => v.name.includes('Google') && (v.name.includes('Bangla') || v.name.includes('Bengali') || v.lang.includes('bn')));
-        }
-
-        // Priority 3: Other Female Bengali Voices
-        if (!miraVoice) {
-            miraVoice = voices.find(v => v.lang.includes('bn') && (
-                v.name.includes('Female') ||
-                v.name.includes('Sushmita') ||
-                v.name.includes('Yasmin')
-            ));
-        }
-
-        // Priority 4: Any Bengali Voice
+        // Priority 2: Any Bangla Voice
         if (!miraVoice) {
             miraVoice = voices.find(v => v.lang.includes('bn'));
+        }
+
+        // Priority 3: English voices that sound female (Fallback)
+        if (!miraVoice) {
+            miraVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Google US English'));
         }
 
         if (miraVoice) {
             logDebug(`✅ Voice set to: ${miraVoice.name}`);
         } else {
-            logDebug("⚠️ English fallback or no voice found yet.");
+            logDebug("⚠️ No specific Bengali voice found. Using default.");
         }
     } else {
         // Retry if voices are not loaded yet
@@ -57,10 +48,34 @@ function loadVoices() {
 }
 
 // Ensure voices are loaded
-loadVoices();
-if (synth.onvoiceschanged !== undefined) {
-    synth.onvoiceschanged = loadVoices;
+if (speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = loadVoices;
 }
+loadVoices();
+
+// --- MOBILE START LOGIC ---
+const startBtn = document.getElementById('startBtn');
+const startOverlay = document.getElementById('startOverlay');
+
+if (startBtn) {
+    startBtn.addEventListener('click', () => {
+        // 1. Initialize Audio Context (Mobile Requirement)
+        resumeAudio();
+
+        // 2. Hide Overlay
+        startOverlay.style.opacity = '0';
+        setTimeout(() => startOverlay.style.display = 'none', 500);
+
+        // 3. Start Mira
+        unlockMira();
+
+        // 4. Force Speech to "warm up" TTS engine
+        const warmUp = new SpeechSynthesisUtterance('');
+        warmUp.volume = 0;
+        synth.speak(warmUp);
+    });
+}
+
 
 // Resume Audio Context on interaction (Fix for mobile autoplay)
 function resumeAudio() {
@@ -247,6 +262,7 @@ function unlockMira() {
     }
 
     initRecognition();
+    requestWakeLock(); // Request screen to stay on
 
     // Auto-speak greeting after a short delay
     setTimeout(() => {
@@ -355,20 +371,14 @@ function showHTTPSWarning() {
     }, 6000);
 }
 
-// Auto-start on page load
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        unlockMira();
-    }, 500);
-});
-
 // Keep running in background
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
         logDebug("Tab hidden - keeping recognition active");
     } else {
-        logDebug("Tab visible - ensuring recognition is active");
-        if (recognition && !isSpeaking) {
+        logDebug("Tab visible - checking status");
+        // Only restart if we have already started (user clicked button)
+        if (recognition && !isSpeaking && startOverlay.style.display === 'none') {
             restartRecognition();
         }
     }
@@ -398,12 +408,12 @@ document.addEventListener('visibilitychange', async () => {
     }
 });
 
-// Request wake lock on start
-requestWakeLock();
+// Request wake lock on start (called within unlockMira now)
+// requestWakeLock(); -> Moved to unlockMira for better flow
 
-// Backup: Also start on any user interaction
-document.body.addEventListener('click', unlockMira, { once: true });
-document.body.addEventListener('touchstart', unlockMira, { once: true });
+// Backup: Remove auto-click listeners, trust the Start Button
+// document.body.addEventListener('click', unlockMira, { once: true });
+
 
 // Manual Emergency Controls (Adding UI via JS)
 const controls = document.createElement('div');

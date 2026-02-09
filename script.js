@@ -127,6 +127,13 @@ function initRecognition() {
         }
         if (finalTranscript) {
             logDebug(`Heard: "${finalTranscript}"`);
+
+            // Visual check for wake word
+            if (finalTranscript.toLowerCase().includes('mira') || finalTranscript.includes('মিরা')) {
+                indicator.style.background = '#00ff00'; // Green flash
+                setTimeout(() => indicator.style.background = '#00f2ff', 500);
+            }
+
             addMessage(finalTranscript, 'user');
             handleCommand(finalTranscript);
         }
@@ -442,8 +449,29 @@ function logDebug(msg) {
 
 // Command Logic
 async function handleCommand(cmd) {
-    const command = cmd.toLowerCase().trim();
-    if (!command) return;
+    const rawCommand = cmd.toLowerCase().trim();
+    if (!rawCommand) return;
+
+    // --- WAKE WORD DETECTION (MANDATORY) ---
+    const wakeWords = ['mira', 'মিরা', 'নীরা', 'mera', 'mir a', 'need a']; // Common mishearings
+    const foundWakeWord = wakeWords.find(w => rawCommand.includes(w));
+
+    // If typing manually (no speech), bypass wake word check
+    const isManualInput = document.activeElement === userInput;
+
+    if (!foundWakeWord && !isManualInput) {
+        logDebug(`Ignored (No 'Mira'): "${rawCommand}"`);
+        return;
+    }
+
+    // Activated!
+    const command = foundWakeWord ? rawCommand.replace(foundWakeWord, '').trim() : rawCommand;
+
+    // If only said "Mira"
+    if (!command || command.length < 2) {
+        speak("জি বস, বলুন?");
+        return;
+    }
 
     updateStatus('THINKING...', '50%');
     logDebug(`Handling command: "${command}"`);
@@ -621,7 +649,15 @@ userInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter' && userInput.value.trim() !== "") {
         const text = userInput.value;
         addMessage(text, 'user');
-        handleCommand(text);
+
+        // Manual override for wake word check
+        if (!text.toLowerCase().includes('mira') && !text.includes('মিরা')) {
+            // Append handled command directly if no wake word (for better UX)
+            handleCommand("mira " + text);
+        } else {
+            handleCommand(text);
+        }
+
         userInput.value = "";
     }
 });

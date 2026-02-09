@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mira AI - Personal Mobile Assistant</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Overlay removed - Auto-start enabled -->
+
+    <div id="app">
+        <header>
+            <h1 style="font-size: 1.5rem; text-align: center; color: var(--primary-color)">MIRA</h1>
+        </header>
+
+        <div class="core-container">
+            <div class="core-outer"></div>
+            <div class="core-middle"></div>
+            <div class="core-inner" id="visualizer"></div>
+        </div>
+
+        <div class="status-container">
+            <div class="status-text" id="status">MIR-A IS READY, BOSS</div>
+            <div class="listening-indicator" id="indicator"></div>
+
+            <!-- Device Status Bars -->
+            <div class="device-status">
+                <div class="status-item">
+                    <i class="fas fa-volume-up"></i>
+                    <div class="bar-bg">
+                        <div id="volumeBar" class="bar-fill" style="width: 70%"></div>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-sun"></i>
+                    <div class="bar-bg">
+                        <div id="brightnessBar" class="bar-fill" style="width: 50%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-label">COMMAND LOGS & NOTES</div>
+        <div class="command-history" id="history">
+            <div class="msg msg-mira">আসসালামু আলাইকুম বস, আমি মিরা। আপনার সেবা করার জন্য আমি প্রস্তুত। বলুন, আমি আপনার
+                জন্য কী করতে পারি?</div>
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="আপনার কমান্ড লিখুন..." autocomplete="off">
+            <button class="mic-btn" id="micBtn">
+                <i class="fas fa-microphone"></i>
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Mira AI: Service Worker Registered'))
+                    .catch(err => console.log('Mira AI: SW Registration Failed', err));
+            });
+        }
+    </script>
+</body>
+
+</html>

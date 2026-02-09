@@ -1,0 +1,251 @@
+:root {
+    --primary-color: #00f2ff;
+    --secondary-color: #7000ff;
+    --bg-color: #050505;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --text-color: #ffffff;
+    --neon-glow: 0 0 15px rgba(0, 242, 255, 0.5);
+    --neon-purple: 0 0 15px rgba(112, 0, 255, 0.5);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#app {
+    width: 100%;
+    max-width: 500px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+/* Neural Core Animation */
+.core-container {
+    position: relative;
+    width: 250px;
+    height: 250px;
+    margin: 50px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.core-outer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 2px solid var(--primary-color);
+    border-radius: 50%;
+    box-shadow: var(--neon-glow);
+    animation: rotate 10s linear infinite;
+}
+
+.core-middle {
+    position: absolute;
+    width: 80%;
+    height: 80%;
+    border: 2px dashed var(--secondary-color);
+    border-radius: 50%;
+    animation: rotate-reverse 8s linear infinite;
+}
+
+.core-inner {
+    width: 60px;
+    height: 60px;
+    background: url('mira.png');
+    background-size: cover;
+    background-position: center;
+    border-radius: 50%;
+    box-shadow: 0 0 30px var(--primary-color);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes rotate-reverse {
+    from {
+        transform: rotate(360deg);
+    }
+
+    to {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+
+    50% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
+
+/* Status Bar */
+.status-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.status-text {
+    font-size: 1.2rem;
+    font-weight: 300;
+    letter-spacing: 2px;
+    color: var(--primary-color);
+    text-shadow: var(--neon-glow);
+}
+
+.listening-indicator {
+    margin-top: 10px;
+    height: 4px;
+    width: 0%;
+    background: var(--primary-color);
+    box-shadow: var(--neon-glow);
+    transition: width 0.3s ease;
+    border-radius: 2px;
+}
+
+/* Device Status */
+.device-status {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+    gap: 15px;
+}
+
+.status-item {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card-bg);
+    padding: 8px 15px;
+    border-radius: 20px;
+}
+
+.bar-bg {
+    flex: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    background: var(--primary-color);
+    box-shadow: var(--neon-glow);
+    transition: width 0.3s ease;
+}
+
+.history-label {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 1px;
+    margin-top: 20px;
+    font-weight: 700;
+}
+
+/* Command History */
+.command-history {
+    flex: 1;
+    margin-top: 10px;
+    overflow-y: auto;
+    padding: 10px;
+    background: var(--card-bg);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.msg {
+    margin-bottom: 12px;
+    padding: 10px 15px;
+    border-radius: 10px;
+    max-width: 85%;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.msg-user {
+    align-self: flex-end;
+    background: rgba(112, 0, 255, 0.2);
+    border-left: 3px solid var(--secondary-color);
+    margin-left: auto;
+}
+
+.msg-mira {
+    align-self: flex-start;
+    background: rgba(0, 242, 255, 0.1);
+    border-left: 3px solid var(--primary-color);
+}
+
+/* Input Area */
+.input-area {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+input {
+    flex: 1;
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px 20px;
+    border-radius: 25px;
+    color: white;
+    outline: none;
+    transition: border 0.3s;
+}
+
+input:focus {
+    border-color: var(--primary-color);
+}
+
+.mic-btn {
+    width: 50px;
+    height: 50px;
+    background: var(--primary-color);
+    border: none;
+    border-radius: 50%;
+    color: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--neon-glow);
+    transition: transform 0.2s;
+}
+
+.mic-btn:active {
+    transform: scale(0.9);
+}

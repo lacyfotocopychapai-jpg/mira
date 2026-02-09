@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mira Test - Debug Mode</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #0f0;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #0ff;
+            border-bottom: 2px solid #0ff;
+            padding-bottom: 10px;
+        }
+
+        .test {
+            background: #111;
+            border: 1px solid #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+
+        .pass {
+            color: #0f0;
+        }
+
+        .fail {
+            color: #f00;
+        }
+
+        .warn {
+            color: #ff0;
+        }
+
+        button {
+            background: #0ff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #0cc;
+        }
+
+        #log {
+            background: #000;
+            border: 1px solid #0f0;
+            padding: 10px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔧 MIRA AI - System Test</h1>
+
+    <div class="test">
+        <h3>📋 System Checks:</h3>
+        <div id="checks"></div>
+    </div>
+
+    <div class="test">
+        <h3>🎤 Voice Tests:</h3>
+        <button onclick="testSpeech()">Test Speech</button>
+        <button onclick="testRecognition()">Test Recognition</button>
+        <button onclick="testMira()">Open Mira</button>
+    </div>
+
+    <div class="test">
+        <h3>📊 Console Log:</h3>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        const log = document.getElementById('log');
+        const checks = document.getElementById('checks');
+
+        function addLog(msg, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#f00' : type === 'warn' ? '#ff0' : '#0f0';
+            log.innerHTML += `<div style="color: ${color}">[${time}] ${msg}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function runChecks() {
+            checks.innerHTML = '';
+
+            // Check 1: HTTPS
+            const isHTTPS = location.protocol === 'https:';
+            const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+            const httpsStatus = isHTTPS || isLocalhost ? 'pass' : 'warn';
+            checks.innerHTML += `<div class="${httpsStatus}">✓ Protocol: ${location.protocol} ${isHTTPS ? '(HTTPS ✓)' : isLocalhost ? '(Localhost ✓)' : '(HTTP - Voice may not work!)'}</div>`;
+
+            // Check 2: Speech Recognition
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recStatus = SpeechRecognition ? 'pass' : 'fail';
+            checks.innerHTML += `<div class="${recStatus}">${SpeechRecognition ? '✓' : '✗'} Speech Recognition: ${SpeechRecognition ? 'Available' : 'NOT Available'}</div>`;
+
+            // Check 3: Speech Synthesis
+            const synthStatus = window.speechSynthesis ? 'pass' : 'fail';
+            checks.innerHTML += `<div class="${synthStatus}">${window.speechSynthesis ? '✓' : '✗'} Speech Synthesis: ${window.speechSynthesis ? 'Available' : 'NOT Available'}</div>`;
+
+            // Check 4: Notifications
+            const notifStatus = 'Notification' in window ? 'pass' : 'warn';
+            checks.innerHTML += `<div class="${notifStatus}">${'Notification' in window ? '✓' : '~'} Notifications: ${'Notification' in window ? 'Available' : 'Not Available'}</div>`;
+
+            // Check 5: Wake Lock
+            const wakeStatus = 'wakeLock' in navigator ? 'pass' : 'warn';
+            checks.innerHTML += `<div class="${wakeStatus}">${'wakeLock' in navigator ? '✓' : '~'} Wake Lock: ${'wakeLock' in navigator ? 'Available' : 'Not Available'}</div>`;
+
+            // Check 6: Browser
+            const ua = navigator.userAgent;
+            const isChrome = ua.includes('Chrome') && !ua.includes('Edg');
+            const isEdge = ua.includes('Edg');
+            const browserStatus = (isChrome || isEdge) ? 'pass' : 'warn';
+            const browserName = isChrome ? 'Chrome' : isEdge ? 'Edge' : 'Other';
+            checks.innerHTML += `<div class="${browserStatus}">${(isChrome || isEdge) ? '✓' : '~'} Browser: ${browserName}</div>`;
+
+            addLog('System checks completed', 'info');
+        }
+
+        function testSpeech() {
+            addLog('Testing speech synthesis...', 'info');
+            if (window.speechSynthesis) {
+                const utterance = new SpeechSynthesisUtterance('হ্যালো, আমি মিরা। আপনি কি আমার কথা শুনতে পাচ্ছেন?');
+                utterance.lang = 'bn-BD';
+                utterance.onstart = () => addLog('Speech started', 'info');
+                utterance.onend = () => addLog('Speech ended', 'info');
+                utterance.onerror = (e) => addLog(`Speech error: ${e.error}`, 'error');
+                speechSynthesis.speak(utterance);
+            } else {
+                addLog('Speech synthesis not available!', 'error');
+            }
+        }
+
+        function testRecognition() {
+            addLog('Testing speech recognition...', 'info');
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'bn-BD';
+                recognition.onstart = () => addLog('Recognition started - speak now!', 'info');
+                recognition.onresult = (e) => {
+                    const transcript = e.results[0][0].transcript;
+                    addLog(`Heard: "${transcript}"`, 'info');
+                };
+                recognition.onerror = (e) => addLog(`Recognition error: ${e.error}`, 'error');
+                recognition.onend = () => addLog('Recognition ended', 'info');
+
+                try {
+                    recognition.start();
+                } catch (e) {
+                    addLog(`Failed to start: ${e.message}`, 'error');
+                }
+            } else {
+                addLog('Speech recognition not available!', 'error');
+            }
+        }
+
+        function testMira() {
+            addLog('Opening Mira...', 'info');
+            window.open('index.html', '_blank');
+        }
+
+        // Run checks on load
+        runChecks();
+        addLog('Test page loaded', 'info');
+        addLog(`URL: ${location.href}`, 'info');
+    </script>
+</body>
+
+</html>

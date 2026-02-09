@@ -1,0 +1,23 @@
+{
+  "name": "Mira AI - Voice Assistant",
+  "short_name": "Mira",
+  "description": "বাংলা ভয়েস অ্যাসিস্ট্যান্ট - সবসময় আপনার সাথে",
+  "start_url": ".",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#050505",
+  "theme_color": "#00f2ff",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "mira.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "permissions": [
+    "microphone",
+    "wake-lock"
+  ]
+}

@@ -142,7 +142,13 @@ function initRecognition() {
         logDebug("Recognition Ended - Auto Restarting...");
         micBtn.classList.remove('active');
         // ALWAYS restart - keep listening in background
-        setTimeout(() => restartRecognition(), 500);
+        if (!isSpeaking) {
+            try {
+                recognition.start();
+            } catch (e) {
+                setTimeout(() => restartRecognition(), 100);
+            }
+        }
     };
 
     try {
@@ -448,7 +454,8 @@ async function handleCommand(cmd) {
             speak("হোয়াটসঅ্যাপ খুলছি বস।");
             const waUrl = command.includes('পাঠাও') ? `https://wa.me/?text=${encodeURIComponent(command.replace(/মেসেজ|হোয়াটসঅ্যাপ|whatsapp|পাঠাও/gi, ''))}` : `whatsapp://send`;
             setTimeout(() => {
-                window.location.href = waUrl;
+                // Open in a new tab/window to keep Mira running in the background
+                window.open(waUrl, '_blank');
             }, 1000);
             return;
         }
@@ -618,3 +625,77 @@ userInput.addEventListener('keypress', (e) => {
         userInput.value = "";
     }
 });
+
+// --- BACKGROUND AUDIO HACK ---
+// Playing silent audio in loop prevents browser from killing JS
+const silentAudio = new Audio('https://raw.githubusercontent.com/anars/blank-audio/master/250-milliseconds-of-silence.mp3');
+silentAudio.loop = true;
+
+function enableBackgroundMode() {
+    try {
+        silentAudio.play().catch(e => console.log('Silent audio failed', e));
+
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+            const audioCtx = new AudioContext();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.value = 0.0001; // Nearly silent
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            logDebug("Background Mode Active");
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+if (startBtn) {
+    startBtn.addEventListener('click', enableBackgroundMode);
+}
+
+// --- PARTICLE EFFECT FOR CORE ---
+function createParticle() {
+    const core = document.querySelector('.core-container');
+    if (!core) return;
+
+    const particle = document.createElement('div');
+    particle.style.position = 'absolute';
+    particle.style.width = (Math.random() * 4 + 2) + 'px';
+    particle.style.height = particle.style.width;
+    particle.style.background = 'var(--primary-color)';
+    particle.style.borderRadius = '50%';
+    particle.style.left = '50%';
+    particle.style.top = '50%';
+    particle.style.pointerEvents = 'none';
+    particle.style.boxShadow = '0 0 10px var(--primary-color)';
+    particle.style.zIndex = '10';
+
+    core.appendChild(particle);
+
+    const angle = Math.random() * 360; // Random direction
+    const distance = 60 + Math.random() * 60; // Random distance
+    const duration = 1000 + Math.random() * 1000; // Random duration
+
+    const anim = particle.animate([
+        { transform: 'translate(-50%, -50%) scale(0)', opacity: 1 },
+        {
+            transform: `translate(calc(-50% + ${Math.cos(angle) * distance}px), calc(-50% + ${Math.sin(angle) * distance}px)) scale(0)`,
+            opacity: 0
+        }
+    ], {
+        duration: duration,
+        easing: 'cubic-bezier(0, .9, .57, 1)',
+    });
+
+    anim.onfinish = () => particle.remove();
+}
+
+// Generate particles when speaking
+setInterval(() => {
+    if (isSpeaking) {
+        createParticle();
+        createParticle();
+    }
+}, 100);

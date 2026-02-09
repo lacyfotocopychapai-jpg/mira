@@ -30,7 +30,7 @@
 
     <div id="app">
         <header>
-            <h1 style="font-size: 1.5rem; text-align: center; color: var(--primary-color)">MIRA</h1>
+            <div class="logo-text">MIRA <span style="font-size:0.5em; color:var(--secondary-color);">AI</span></div>
         </header>
 
         <div class="core-container">
@@ -40,22 +40,10 @@
         </div>
 
         <div class="status-container">
-            <div class="status-text" id="status">MIR-A IS READY, BOSS</div>
-            <div class="listening-indicator" id="indicator"></div>
-
-            <!-- Device Status Bars -->
-            <div class="device-status">
-                <div class="status-item">
-                    <i class="fas fa-volume-up"></i>
-                    <div class="bar-bg">
-                        <div id="volumeBar" class="bar-fill" style="width: 70%"></div>
-                    </div>
-                </div>
-                <div class="status-item">
-                    <i class="fas fa-sun"></i>
-                    <div class="bar-bg">
-                        <div id="brightnessBar" class="bar-fill" style="width: 50%"></div>
-                    </div>
+            <div class="status-box">
+                <div class="status-text" id="status">SYSTEM ONLINE</div>
+                <div class="listening-bar">
+                    <div class="listening-fill" id="indicator"></div>
                 </div>
             </div>
         </div>
